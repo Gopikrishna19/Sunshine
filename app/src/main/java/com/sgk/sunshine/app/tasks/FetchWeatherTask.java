@@ -81,7 +81,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             Uri uri = Uri.parse("http://api.openweathermap.org/data/2.5/forecast/daily").buildUpon()
                     .appendQueryParameter("q", params[0])
                     .appendQueryParameter("mode", "json")
-                    .appendQueryParameter("units", "metric")
+                    .appendQueryParameter("units", params[1])
                     .appendQueryParameter("cnt", "7").build();
 
             URL url = new URL(uri.toString());

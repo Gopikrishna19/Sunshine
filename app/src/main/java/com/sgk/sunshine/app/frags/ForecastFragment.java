@@ -1,7 +1,10 @@
 package com.sgk.sunshine.app.frags;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -13,10 +16,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.sgk.sunshine.app.DetailActivity;
 import com.sgk.sunshine.app.R;
-import com.sgk.sunshine.app.common.Fixed;
+import com.sgk.sunshine.app.SettingsActivity;
 import com.sgk.sunshine.app.tasks.FetchWeatherTask;
 
 import java.util.ArrayList;
@@ -25,6 +29,7 @@ import java.util.Arrays;
 public class ForecastFragment extends Fragment {
     ListView lvForecast;
     ArrayAdapter<String> aaForecast;
+    public static final String INTENT_DETAIL_WEATHER = "com.intent.detail.weatherString";
 
     public ForecastFragment() {
         setHasOptionsMenu(true);
@@ -44,7 +49,7 @@ public class ForecastFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
-                detailIntent.putExtra(Fixed.INTENT_DETAIL_WEATHER, aaForecast.getItem(i));
+                detailIntent.putExtra(INTENT_DETAIL_WEATHER, aaForecast.getItem(i));
                 startActivity(detailIntent);
             }
         });
@@ -57,20 +62,53 @@ public class ForecastFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                new FetchWeatherTask(new FetchWeatherTask.OnTaskCompleted() {
-                    @Override
-                    public void taskCompleted(String[] resultSet) {
-                        aaForecast.clear();
-                        for(String r: resultSet) {
-                            aaForecast.add(r);
-                        }
-                    }
-                }).execute("11416");
+                updateWeather();
+                break;
+            case R.id.action_map:
+                openPreferredLocation();
+                break;
+            case R.id.action_settings:
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openPreferredLocation() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String loc = sp.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+
+        Uri geo = Uri.parse("geo:0,0").buildUpon().appendQueryParameter("q", loc).build();
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geo);
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null)
+            startActivity(intent);
+        else
+            Toast.makeText(getActivity(), "Sorry! No Map application found", Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateWeather() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String loc = sp.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+        String unit = sp.getString(getString(R.string.pref_units_key), getString(R.string.pref_units_default));
+
+        new FetchWeatherTask(new FetchWeatherTask.OnTaskCompleted() {
+            @Override
+            public void taskCompleted(String[] resultSet) {
+                aaForecast.clear();
+                for (String r : resultSet) {
+                    aaForecast.add(r);
+                }
+            }
+        }).execute(loc, unit);
     }
 }

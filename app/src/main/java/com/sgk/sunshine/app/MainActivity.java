@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import com.sgk.sunshine.app.frags.ForecastFragment;
 
-
 public class MainActivity extends ActionBarActivity {
 
     @Override
