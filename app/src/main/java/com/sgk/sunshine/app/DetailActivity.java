@@ -3,18 +3,18 @@ package com.sgk.sunshine.app;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 
-import com.sgk.sunshine.app.frags.ForecastFragment;
+import com.sgk.sunshine.app.frags.DetailFragment;
 
 
-public class MainActivity extends ActionBarActivity {
+public class DetailActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        if (savedInstanceState == null) {
+        setContentView(R.layout.activity_detail);
+        if(savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.main_container, new ForecastFragment())
+                    .add(R.id.detail_container, new DetailFragment())
                     .commit();
         }
     }
